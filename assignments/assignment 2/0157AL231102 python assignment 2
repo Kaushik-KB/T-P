@@ -1,0 +1,149 @@
+# Name: Kaushik Barnwal
+# Enrollment: 0157AL231102
+# batch : 5 Batch 
+# Time : (10.30)
+# assignment 2
+import json
+
+# ...............................................................................
+# Helper Functions
+
+
+def load_data():
+    """Load all student records from the JSON file"""
+    try:
+        with open("students.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+def save_data(data):
+    """Store all student records into the JSON file"""
+    with open("students.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+# ...............................................................................
+# Main Functionalities
+
+def register():
+    data = load_data()
+    username = input("\nEnter a unique username: ")
+
+    if username in data:
+        print("Username already taken! Please choose another one.")
+        return
+
+    password = input("Create a password: ")
+    name = input("Enter your full name: ")
+    age = input("Enter your age: ")
+    gender = input("Enter your gender: ")
+    email = input("Enter your email ID: ")
+    phone = input("Enter contact number: ")
+    course = input("Enter course name: ")
+    branch = input("Enter branch: ")
+    year = input("Enter academic year: ")
+    address = input("Enter your address: ")
+    enrollment_id = input("Enter enrollment ID: ")
+
+    data[username] = {
+        "password": password,
+        "name": name,
+        "age": age,
+        "gender": gender,
+        "email": email,
+        "phone": phone,
+        "course": course,
+        "branch": branch,
+        "year": year,
+        "address": address,
+        "enrollment_id": enrollment_id
+    }
+
+    save_data(data)
+    print("\nRegistration completed successfully!\n")
+
+def login():
+    data = load_data()
+    username = input("\nEnter your username: ")
+    password = input("Enter your password: ")
+
+    if username in data and data[username]["password"] == password:
+        print(f"\nWelcome back, {data[username]['name']}!\n")
+        dashboard(username)
+    else:
+        print("\nIncorrect username or password. Please try again.\n")
+
+def show_profile(username):
+    data = load_data()
+    user = data[username]
+    print("\n------ Student Profile ------")
+    for key, value in user.items():
+        if key != "password":
+            print(f"{key.replace('_', ' ').capitalize()}: {value}")
+    print("-----------------------------\n")
+
+def update_profile(username):
+    data = load_data()
+    user = data[username]
+
+    print("\nWhich information do you want to modify?")
+    for i, key in enumerate(user.keys(), start=1):
+        if key != "password":
+            print(f"{i}. {key.replace('_', ' ').capitalize()}")
+
+    choice = input("\nType the field name you want to update: ").lower()
+    if choice in user and choice != "password":
+        new_value = input(f"Enter the new value for {choice}: ")
+        user[choice] = new_value
+        save_data(data)
+        print("\nProfile information updated successfully!\n")
+    else:
+        print("\nInvalid field selected.\n")
+
+def dashboard(username):
+    while True:
+        print("===== Student Dashboard =====")
+        print("1. View Profile")
+        print("2. Edit Profile")
+        print("3. Logout")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            show_profile(username)
+        elif choice == "2":
+            update_profile(username)
+        elif choice == "3":
+            print("\nLogging out... See you next time.\n")
+            break
+        else:
+            print("\nInvalid input! Please choose a valid option.\n")
+
+# ...............................................................................
+# Main Program Execution
+
+
+def main():
+    while True:
+        print("======== Student Enrollment System ========")
+        print("1. New Student Registration")
+        print("2. Login to Dashboard")
+        print("3. Exit Program")
+
+        choice = input("Select your option: ")
+
+        if choice == "1":
+            register()
+        elif choice == "2":
+            login()
+        elif choice == "3":
+            print("\nExiting program... Goodbye!\n")
+            break
+        else:
+            print("\nInvalid option! Please try again.\n")
+
+# ..............................................................................
+# Start the Program
+
+if __name__ == "__main__":
+    main()

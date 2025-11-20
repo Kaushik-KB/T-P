@@ -1,0 +1,189 @@
+# Name: Kaushik Barnwal
+# Enrollment: 0157AL231102
+# batch : 5 Batch 
+# Time : (10.30)
+# assignment 3
+import random
+from datetime import datetime
+
+class User:
+    def __init__(self, enrollment="", name="", email="", branch="", year="", contact="", password=""):
+        self.enrollment = enrollment
+        self.name = name
+        self.email = email
+        self.branch = branch
+        self.year = year
+        self.contact = contact
+        self.password = password
+
+    def save(self):
+        with open("users.txt", "a") as f:
+            f.write(f"{self.enrollment},{self.name},{self.email},{self.branch},{self.year},{self.contact},{self.password}\n")
+
+    @staticmethod
+    def load_users():
+        users = {}
+        try:
+            with open("users.txt", "r") as f:
+                for line in f:
+                    e,n,em,b,y,c,p = line.strip().split(",")
+                    users[e] = User(e,n,em,b,y,c,p)
+        except FileNotFoundError:
+            pass
+        return users
+    
+    @staticmethod
+    def update_user(updated_user):
+        users = User.load_users()
+        users[updated_user.enrollment] = updated_user
+        with open("users.txt", "w") as f:
+            for u in users.values():
+                f.write(f"{u.enrollment},{u.name},{u.email},{u.branch},{u.year},{u.contact},{u.password}\n")
+
+
+class Quiz:
+    questions = {
+        "DSA": [
+            ("Which data structure uses FIFO?", ["Stack", "Queue", "Tree", "Graph"], "Queue"),
+            ("Python uses which data structure for recursion?", ["Queue", "Stack", "Heap", "List"], "Stack"),
+            ("Best case time complexity of Binary Search?", ["O(n)", "O(log n)", "O(n2)", "O(1)"], "O(log n)"),
+            ("Which sorting is stable?", ["Quick", "Merge", "Heap", "Selection"], "Merge"),
+            ("Which is non-linear DS?", ["Array", "Queue", "Tree", "Stack"], "Tree")
+        ],
+        "DBMS": [
+            ("What is SQL?", ["Programming language", "Query language", "OS", "Compiler"], "Query language"),
+            ("DBMS stands for?", ["Data Base Model System", "Database Management System", "Data Manage System", "None"], "Database Management System"),
+            ("Primary key is?", ["Unique & Not NULL", "NULL allowed", "Duplicate allowed", "None"], "Unique & Not NULL"),
+            ("Which joins tables?", ["JOIN", "SELECT", "DELETE", "UPDATE"], "JOIN"),
+            ("Normalization reduces?", ["Redundancy", "Speed", "Size", "Security"], "Redundancy")
+        ],
+        "PYTHON": [
+            ("Python is?", ["Low level", "High level", "Machine language", "None"], "High level"),
+            ("Which keyword defines a function?", ["func", "define", "def", "fun"], "def"),
+            ("List is?", ["Mutable", "Immutable", "Constant", "None"], "Mutable"),
+            ("Which operator for power?", ["^", "**", "%", "//"], "**"),
+            ("Dictionaries store?", ["Ordered pairs", "Key-value pairs", "Characters", "Loops"], "Key-value pairs")
+        ]
+    }
+
+    @staticmethod
+    def start_quiz(user):
+        print("\nChoose Category:")
+        print("1. DSA\n2. DBMS\n3. PYTHON")
+        choice = input("Enter choice: ")
+
+        category = { "1":"DSA", "2":"DBMS", "3":"PYTHON" }.get(choice)
+        if not category:
+            print("Invalid category")
+            return
+        
+        qs = Quiz.questions[category]
+        random.shuffle(qs)
+        score = 0
+
+        for q, opts, ans in qs[:5]:
+            print(f"\n{q}")
+            for idx, op in enumerate(opts, 1):
+                print(f"{idx}. {op}")
+            user_ans = input("Your answer: ")
+
+            if user_ans.isdigit() and opts[int(user_ans)-1] == ans:
+                score += 1
+
+        total = 5
+        print(f"\nScore: {score}/{total}")
+
+        with open("scores.txt","a") as f:
+            f.write(f"{user.enrollment},{category},{score}/{total},{datetime.now()}\n")
+
+
+class System:
+    def __init__(self):
+        self.logged_user = None
+
+    def register(self):
+        print("\n--- Registration ---")
+        e = input("Enrollment: ")
+        users = User.load_users()
+        if e in users:
+            print("User already exists!")
+            return
+
+        n = input("Name: ")
+        em = input("Email: ")
+        b = input("Branch: ")
+        y = input("Year: ")
+        c = input("Contact: ")
+        p = input("Password: ")
+
+        user = User(e,n,em,b,y,c,p)
+        user.save()
+        print("Registration successful!")
+
+    def login(self):
+        print("\n--- Login ---")
+        e = input("Enrollment: ")
+        p = input("Password: ")
+
+        users = User.load_users()
+        if e in users and users[e].password == p:
+            self.logged_user = users[e]
+            print("Login successful!")
+        else:
+            print("Invalid credentials")
+
+    def update_profile(self):
+        if not self.logged_user:
+            print("Login first")
+            return
+        print("Update details (leave blank to skip)")
+        self.logged_user.name = input(f"Name ({self.logged_user.name}): ") or self.logged_user.name
+        self.logged_user.email = input(f"Email ({self.logged_user.email}): ") or self.logged_user.email
+        self.logged_user.branch = input(f"Branch ({self.logged_user.branch}): ") or self.logged_user.branch
+        self.logged_user.year = input(f"Year ({self.logged_user.year}): ") or self.logged_user.year
+        self.logged_user.contact = input(f"Contact ({self.logged_user.contact}): ") or self.logged_user.contact
+        self.logged_user.password = input(f"Password: ") or self.logged_user.password
+
+        User.update_user(self.logged_user)
+        print("Profile Updated!")
+
+    def show_profile(self):
+        if not self.logged_user:
+            print("Login first")
+            return
+        u = self.logged_user
+        print("\n--- Profile ---")
+        print(f"Enrollment: {u.enrollment}\nName: {u.name}\nEmail: {u.email}\nBranch: {u.branch}\nYear: {u.year}\nContact: {u.contact}")
+
+    def logout(self):
+        self.logged_user = None
+        print("Logged Out")
+
+    def run(self):
+        while True:
+            print("\n==== STUDENT SYSTEM ====")
+            print("1 Register")
+            print("2 Login")
+            print("3 Profile")
+            print("4 Update Profile")
+            print("5 Quiz")
+            print("6 Logout")
+            print("7 Exit")
+            
+            ch = input("Enter choice: ")
+
+            if ch=="1": self.register()
+            elif ch=="2": self.login()
+            elif ch=="3": self.show_profile()
+            elif ch=="4": self.update_profile()
+            elif ch=="5":
+                if self.logged_user:
+                    Quiz.start_quiz(self.logged_user)
+                else:
+                    print("Login first")
+            elif ch=="6": self.logout()
+            elif ch=="7": break
+            else: print("Invalid choice")
+
+
+System().run()
